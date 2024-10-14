@@ -1,0 +1,66 @@
+---
+    - name: Install requirements for CentOS
+      yum:
+        name:
+          - gcc
+          - make
+          - glibc-devel
+          - glibc
+          - wget
+          - unzip
+          - httpd
+          - php
+          - gd
+          - gd-devel
+          - perl
+          - postfix
+        state: present
+      when: ansible_distribution == "CentOS"
+
+    - name: Install requirements for Ubuntu
+      apt:
+        name:
+          - build-essential
+          - apache2
+          - php
+          - libapache2-mod-php
+          - php-gd
+          - unzip
+          - postfix
+        update_cache: yes
+      when: ansible_distribution == "Ubuntu"
+
+    - name: Download Nagios 4
+      get_url:
+        url: https://assets.nagios.com/downloads/nagioscore/releases/nagios-4.4.6.tar.gz
+        dest: /tmp/nagios-4.4.6.tar.gz
+
+    - name: Extract Nagios 4
+      unarchive:
+        src: /tmp/nagios-4.4.6.tar.gz
+        dest: /tmp/
+        remote_src: yes
+
+    - name: Install Nagios on Ubuntu
+      apt:
+        name: nagios4
+        state: present
+      when: ansible_distribution == "Ubuntu"
+
+    - name: Install EPEL repository on CentOS
+      yum:
+        name: epel-release
+        state: present
+      when: ansible_distribution == "CentOS"
+
+    - name: Install Nagios on CentOS
+      yum:
+        name: nagios
+        state: present
+      when: ansible_distribution == "CentOS"
+
+    - name: Start and Enable Nagios 4 Service
+      service:
+        name: "{{ 'httpd' if ansible_distribution == 'CentOS' else 'apache2' }}"
+        state: started
+        enabled: true
